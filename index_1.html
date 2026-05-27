@@ -1,0 +1,2461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#06090f" />
+  <title>VK Discipline Dashboard</title>
+  <meta name="description" content="A premium futuristic self-discipline tracking dashboard." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+
+  <style>
+/* ============================================
+   VK DISCIPLINE DASHBOARD
+   Premium futuristic dark theme — neon green + blue glow
+   ============================================ */
+
+/* ---------- RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Outfit', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+a { color: inherit; text-decoration: none; }
+input, textarea { font-family: inherit; color: inherit; }
+img, svg { display: block; max-width: 100%; }
+
+/* ---------- TOKENS ---------- */
+:root {
+  /* base */
+  --bg: #05080d;
+  --bg-2: #0a0f17;
+  --surface: rgba(18, 26, 38, 0.55);
+  --surface-2: rgba(28, 38, 54, 0.45);
+  --border: rgba(120, 220, 200, 0.12);
+  --border-strong: rgba(120, 220, 200, 0.28);
+
+  /* text */
+  --text: #e8f0f5;
+  --text-dim: #9fb0bf;
+  --text-faint: #607284;
+
+  /* neon */
+  --neon-green: #38f5b3;
+  --neon-green-soft: #38f5b340;
+  --neon-blue: #4fb8ff;
+  --neon-blue-soft: #4fb8ff40;
+  --neon-cyan: #6df3ff;
+
+  --danger: #ff5b6e;
+  --warn: #f5c542;
+
+  /* gradients */
+  --grad-primary: linear-gradient(135deg, #38f5b3 0%, #4fb8ff 100%);
+  --grad-glow: radial-gradient(ellipse at top left, #38f5b322, transparent 60%),
+               radial-gradient(ellipse at bottom right, #4fb8ff22, transparent 60%);
+
+  /* shadows */
+  --shadow-soft: 0 8px 30px rgba(0,0,0,0.45);
+  --shadow-glow-green: 0 0 24px rgba(56, 245, 179, 0.35);
+  --shadow-glow-blue:  0 0 24px rgba(79, 184, 255, 0.35);
+
+  /* radii */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+
+  /* fonts */
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ---------- BACKGROUND ATMOSPHERE ---------- */
+.bg-atmosphere {
+  position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(ellipse at 20% 0%, #0c1d2840 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, #0a2a2640 0%, transparent 60%),
+    linear-gradient(180deg, #05080d 0%, #060a11 100%);
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: float 18s ease-in-out infinite;
+}
+.orb-1 { width: 500px; height: 500px; background: #38f5b3; top: -200px; left: -150px; }
+.orb-2 { width: 600px; height: 600px; background: #4fb8ff; bottom: -250px; right: -200px; animation-delay: -6s; }
+.orb-3 { width: 350px; height: 350px; background: #6df3ff; top: 40%; left: 60%; opacity: 0.18; animation-delay: -12s; }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(40px, -30px) scale(1.08); }
+}
+.grid-overlay {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(120,220,200,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,220,200,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+.noise {
+  position: absolute; inset: 0; opacity: 0.04; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- GLASS BASE ---------- */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ---------- TOPNAV ---------- */
+.topnav {
+  position: sticky; top: 12px; z-index: 100;
+  margin: 12px auto 0;
+  width: calc(100% - 24px);
+  max-width: 1280px;
+  border-radius: 999px;
+  padding: 10px 14px;
+}
+.topnav-inner {
+  display: flex; align-items: center; gap: 12px;
+  justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand-logo {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--grad-primary);
+  display: grid; place-items: center;
+  color: #02110b; flex-shrink: 0;
+  box-shadow: var(--shadow-glow-green);
+}
+.brand-logo svg { width: 22px; height: 22px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1; min-width: 0; }
+.brand-title {
+  font-weight: 800; font-size: 17px; letter-spacing: 0.5px;
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.brand-sub { font-size: 11px; color: var(--text-dim); letter-spacing: 0.4px; margin-top: 2px; }
+
+.nav-links { display: flex; gap: 6px; }
+.nav-links a {
+  font-size: 13.5px; font-weight: 500; color: var(--text-dim);
+  padding: 8px 14px; border-radius: 999px; transition: all 0.25s;
+}
+.nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+.topnav-actions { display: flex; gap: 8px; }
+
+/* ---------- BUTTONS ---------- */
+.btn-ghost, .btn-primary, .btn-danger, .btn-danger-solid {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 13.5px; padding: 10px 16px;
+  border-radius: 999px; transition: all 0.25s; letter-spacing: 0.2px;
+  border: 1px solid transparent;
+}
+.btn-ghost {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+.btn-ghost:hover {
+  background: rgba(56,245,179,0.08);
+  border-color: var(--border-strong);
+  color: var(--neon-green);
+}
+.btn-ghost svg { width: 16px; height: 16px; }
+.btn-primary {
+  background: var(--grad-primary); color: #02110b;
+  box-shadow: var(--shadow-glow-green);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 32px rgba(56,245,179,0.55); }
+.btn-danger {
+  background: rgba(255,91,110,0.08);
+  border-color: rgba(255,91,110,0.25);
+  color: var(--danger);
+  padding: 10px 12px;
+}
+.btn-danger svg { width: 16px; height: 16px; }
+.btn-danger:hover { background: rgba(255,91,110,0.15); }
+.btn-danger-solid {
+  background: var(--danger); color: #fff;
+  box-shadow: 0 0 24px rgba(255,91,110,0.35);
+}
+.btn-danger-solid:hover { transform: translateY(-1px); }
+
+/* ---------- CONTAINER ---------- */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 16px 80px;
+  display: flex; flex-direction: column; gap: 28px;
+}
+
+/* ---------- HERO ---------- */
+.hero {
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 28px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: var(--grad-glow);
+  pointer-events: none;
+}
+.hero-left { position: relative; z-index: 1; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: var(--text-dim);
+  font-family: var(--font-mono);
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+.dot-sep { color: var(--text-faint); }
+.pulse-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--neon-green);
+  box-shadow: 0 0 12px var(--neon-green);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(1.3); }
+}
+.hero-greet {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+.grad-text {
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-sub {
+  font-size: 15px; color: var(--text-dim);
+  max-width: 540px; margin-bottom: 24px;
+  font-style: italic;
+}
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.meta-chip {
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  display: flex; flex-direction: column; gap: 6px;
+  transition: all 0.25s;
+}
+.meta-chip:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+.meta-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.8px; }
+.meta-value {
+  font-size: 22px; font-weight: 700;
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-family: var(--font-mono);
+}
+
+/* ---------- HERO RIGHT (Progress Ring) ---------- */
+.hero-right {
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  position: relative; z-index: 1;
+}
+.progress-ring-wrap {
+  position: relative;
+  width: 200px; height: 200px;
+  display: grid; place-items: center;
+}
+.progress-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
+.ring-fg {
+  fill: none; stroke: url(#ringGrad); stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 427;
+  stroke-dashoffset: 427;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.ring-percent {
+  font-size: 38px; font-weight: 700; line-height: 1;
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-family: var(--font-mono);
+}
+.ring-label { font-size: 11px; color: var(--text-faint); margin-top: 4px; text-transform: uppercase; letter-spacing: 1.2px; }
+
+.progress-bar-shell {
+  width: 100%; max-width: 260px;
+  height: 8px; border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  overflow: hidden; position: relative;
+}
+.progress-bar-fill {
+  height: 100%; width: 0%;
+  background: var(--grad-primary);
+  border-radius: 999px;
+  box-shadow: 0 0 12px var(--neon-green-soft);
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+.progress-bar-fill::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2.4s linear infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.progress-bar-meta { font-size: 13px; color: var(--text-dim); font-family: var(--font-mono); }
+
+/* ---------- BADGES ---------- */
+.badges-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.badge-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s;
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+.badge-card.earned {
+  opacity: 1;
+  filter: none;
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-glow-green);
+  animation: badgePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes badgePop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.badge-icon { font-size: 28px; }
+.badge-info { display: flex; flex-direction: column; }
+.badge-info strong { font-size: 14px; font-weight: 700; }
+.badge-info span { font-size: 12px; color: var(--text-faint); }
+
+/* ---------- SECTION TITLES ---------- */
+.section-title { margin-bottom: 18px; }
+.section-title h2 {
+  font-size: 24px; font-weight: 700; letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.section-title p { color: var(--text-dim); font-size: 14px; }
+.section-title.inline {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+}
+.history-mini-stats {
+  display: flex; gap: 14px; flex-shrink: 0;
+}
+.history-mini-stats > div {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+.history-mini-stats strong {
+  font-size: 18px; font-family: var(--font-mono);
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.history-mini-stats span { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.6px; }
+
+/* ---------- SECTIONS GRID ---------- */
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 18px;
+}
+.task-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  backdrop-filter: blur(20px);
+  display: flex; flex-direction: column; gap: 14px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.task-section::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--section-accent, var(--grad-primary));
+  opacity: 0.85;
+}
+.task-section:hover { border-color: var(--border-strong); transform: translateY(-3px); }
+.task-section-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.task-section-head .titlewrap { display: flex; align-items: center; gap: 12px; }
+.task-section-head .icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--section-icon-bg, rgba(56,245,179,0.12));
+  color: var(--section-icon-color, var(--neon-green));
+  font-size: 18px;
+}
+.task-section-head h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.task-section-head .count {
+  font-size: 12px; color: var(--text-faint);
+  font-family: var(--font-mono);
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 999px;
+}
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+.task-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--r-sm);
+  transition: all 0.25s;
+  position: relative;
+}
+.task-item:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border);
+}
+.task-item.completed { background: rgba(56,245,179,0.06); border-color: rgba(56,245,179,0.18); }
+.task-item.completed .task-label {
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: var(--neon-green);
+}
+
+/* Animated checkbox */
+.task-check {
+  width: 24px; height: 24px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.2);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  background: transparent;
+}
+.task-check svg {
+  width: 14px; height: 14px;
+  stroke: #02110b; stroke-width: 3;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  transition: stroke-dashoffset 0.4s ease 0.1s;
+}
+.task-check:hover { border-color: var(--neon-green); transform: scale(1.05); }
+.task-item.completed .task-check {
+  background: var(--grad-primary);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 14px var(--neon-green-soft);
+}
+.task-item.completed .task-check svg { stroke-dashoffset: 0; }
+
+.task-label {
+  flex: 1; font-size: 14px; font-weight: 500;
+  transition: all 0.25s;
+  word-break: break-word;
+}
+.task-delete {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  color: var(--text-faint);
+  opacity: 0; transition: all 0.2s;
+  flex-shrink: 0;
+}
+.task-item:hover .task-delete { opacity: 1; }
+.task-delete:hover { background: rgba(255,91,110,0.12); color: var(--danger); }
+.task-delete svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; }
+
+/* Add task UI */
+.add-task-wrap { display: flex; gap: 8px; margin-top: 4px; }
+.add-task-input {
+  flex: 1;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s;
+}
+.add-task-input:focus { border-color: var(--neon-green); box-shadow: 0 0 0 3px rgba(56,245,179,0.12); }
+.add-task-input::placeholder { color: var(--text-faint); }
+.add-task-btn {
+  width: 40px; height: 40px;
+  border-radius: var(--r-sm);
+  background: var(--grad-primary);
+  color: #02110b;
+  display: grid; place-items: center;
+  font-size: 20px; font-weight: 700;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.add-task-btn:hover { transform: scale(1.06); box-shadow: var(--shadow-glow-green); }
+
+/* Task burst (completion confetti dot) */
+.task-burst {
+  position: absolute; left: 12px; top: 50%;
+  width: 24px; height: 24px;
+  border-radius: 50%; transform: translateY(-50%);
+  pointer-events: none;
+  background: radial-gradient(circle, var(--neon-green) 0%, transparent 70%);
+  opacity: 0;
+}
+.task-item.bursting .task-burst { animation: burst 0.6s ease-out; }
+@keyframes burst {
+  0% { opacity: 1; transform: translateY(-50%) scale(0.5); }
+  100% { opacity: 0; transform: translateY(-50%) scale(2.2); }
+}
+
+/* ---------- HISTORY ---------- */
+.history { padding: 26px; }
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+.history-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  transition: all 0.25s;
+  text-align: center;
+}
+.history-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+}
+.history-card.today {
+  border-color: var(--neon-green);
+  box-shadow: var(--shadow-glow-green);
+}
+.history-day { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.6px; }
+.history-date { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+.history-mini-bar {
+  width: 100%; height: 6px; border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.history-mini-bar > div {
+  height: 100%; border-radius: 999px;
+  background: var(--grad-primary);
+  transition: width 0.6s;
+}
+.history-percent { font-size: 14px; font-weight: 700; font-family: var(--font-mono); }
+.history-percent.empty { color: var(--text-faint); font-weight: 400; }
+.history-streak { font-size: 11px; }
+
+/* ---------- DUAL GRID (info + calendar) ---------- */
+.dual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.info-card, .calendar-guide { padding: 26px; }
+.info-card-icon { font-size: 28px; margin-bottom: 10px; }
+.info-card h3, .calendar-guide h3 { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+.info-card p { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; line-height: 1.6; }
+.info-card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.cg-header { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
+.cg-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  background: rgba(79, 184, 255, 0.12);
+  color: var(--neon-blue);
+  flex-shrink: 0;
+}
+.cg-icon svg { width: 22px; height: 22px; }
+.cg-header p { color: var(--text-dim); font-size: 13.5px; }
+.cg-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.cg-list li {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  transition: all 0.25s;
+}
+.cg-list li:hover { border-color: var(--border-strong); transform: translateX(4px); }
+.cg-time {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--neon-blue);
+  font-size: 13px;
+  min-width: 78px;
+}
+.cg-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--grad-primary);
+  color: #02110b;
+  border-radius: var(--r-md);
+  font-weight: 700; font-size: 14.5px;
+  transition: all 0.25s;
+  box-shadow: var(--shadow-glow-green);
+}
+.cg-cta:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(56,245,179,0.55); }
+.cg-cta svg { width: 18px; height: 18px; }
+
+/* ---------- JOURNAL ---------- */
+.journal { padding: 26px; }
+#journal-text {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  font-size: 14.5px;
+  outline: none;
+  transition: all 0.2s;
+  line-height: 1.6;
+}
+#journal-text:focus { border-color: var(--neon-green); box-shadow: 0 0 0 3px rgba(56,245,179,0.1); }
+#journal-text::placeholder { color: var(--text-faint); }
+.journal-meta {
+  margin-top: 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* ---------- FOOTER ---------- */
+.footer { text-align: center; padding-top: 24px; color: var(--text-faint); font-size: 13px; }
+
+/* ---------- MODAL ---------- */
+.modal-shell {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(2, 6, 12, 0.7);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-shell.open { display: flex; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  width: 100%; max-width: 500px;
+  padding: 26px;
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal.small { max-width: 420px; }
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.modal-head h3 { font-size: 19px; font-weight: 700; }
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  color: var(--text-dim);
+  font-size: 16px;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.modal-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 18px; line-height: 1.5; }
+.modal-foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; flex-wrap: wrap; }
+
+.reminder-list { display: flex; flex-direction: column; gap: 8px; }
+.reminder-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.reminder-row-info { display: flex; flex-direction: column; }
+.reminder-row-info strong { font-size: 14px; }
+.reminder-row-info span { font-size: 12px; color: var(--text-faint); font-family: var(--font-mono); }
+
+/* Switch */
+.switch {
+  position: relative;
+  width: 44px; height: 24px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 999px;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+}
+.switch.on { background: var(--grad-primary); }
+.switch.on::after { transform: translateX(20px); }
+
+/* ---------- TOAST ---------- */
+.toast-shell {
+  position: fixed; top: 24px; right: 24px; z-index: 300;
+  display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  backdrop-filter: blur(20px);
+  font-size: 13.5px;
+  box-shadow: var(--shadow-soft), var(--shadow-glow-green);
+  display: flex; align-items: center; gap: 10px;
+  animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+  max-width: 320px;
+}
+.toast.removing { animation: toastOut 0.3s ease forwards; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translateX(40px); }
+}
+.toast-icon { font-size: 18px; }
+
+/* ---------- CONFETTI ---------- */
+#confetti-canvas {
+  position: fixed; inset: 0; z-index: 150;
+  pointer-events: none;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 980px) {
+  .nav-links { display: none; }
+  .hero {
+    grid-template-columns: 1fr;
+    text-align: left;
+    padding: 24px;
+    gap: 24px;
+  }
+  .hero-meta { grid-template-columns: repeat(2, 1fr); }
+  .dual-grid { grid-template-columns: 1fr; }
+  .history-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+  .topnav {
+    margin: 8px 8px 0;
+    width: calc(100% - 16px);
+    padding: 8px 10px;
+    border-radius: 22px;
+  }
+  .brand-logo { width: 36px; height: 36px; }
+  .brand-sub { display: none; }
+  .container { padding: 18px 12px 60px; gap: 22px; }
+  .hero { padding: 22px; }
+  .hero-greet { font-size: 28px; }
+  .badges-row { grid-template-columns: 1fr; }
+  .history-grid { grid-template-columns: repeat(3, 1fr); }
+  .sections-grid { grid-template-columns: 1fr; }
+  .meta-chip { padding: 12px; }
+  .meta-value { font-size: 18px; }
+  .progress-ring-wrap { width: 170px; height: 170px; }
+  .ring-percent { font-size: 32px; }
+  .toast-shell { top: auto; bottom: 16px; right: 16px; left: 16px; }
+  .toast { max-width: 100%; }
+  .info-card, .calendar-guide, .journal, .history { padding: 22px; }
+  .btn-ghost span { display: none; }
+  .btn-ghost { padding: 10px; }
+}
+@media (max-width: 420px) {
+  .history-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ============ AUTH SCREEN ============ */
+.auth-shell {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at 20% 0%, #0c1d2860 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, #0a2a2660 0%, transparent 60%),
+    #05080d;
+}
+.auth-shell.hidden { display: none; }
+.auth-card {
+  width: 100%; max-width: 440px;
+  padding: 36px 30px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,0.04);
+  animation: modalIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.auth-logo {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--grad-primary);
+  display: grid; place-items: center;
+  color: #02110b;
+  margin: 0 auto 18px;
+  box-shadow: var(--shadow-glow-green);
+}
+.auth-logo svg { width: 28px; height: 28px; }
+.auth-title {
+  text-align: center;
+  font-size: 26px; font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.auth-sub {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-bottom: 26px;
+}
+.auth-tabs {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.auth-tab {
+  flex: 1; padding: 10px;
+  font-size: 13.5px; font-weight: 600;
+  color: var(--text-dim);
+  border-radius: 999px;
+  transition: all 0.25s;
+}
+.auth-tab.active {
+  background: var(--grad-primary);
+  color: #02110b;
+  box-shadow: var(--shadow-glow-green);
+}
+.auth-field { margin-bottom: 14px; }
+.auth-field label {
+  display: block;
+  font-size: 12px; color: var(--text-dim);
+  margin-bottom: 6px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.auth-field input {
+  width: 100%;
+  padding: 13px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14.5px;
+  outline: none; transition: all 0.2s;
+}
+.auth-field input:focus {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 0 3px rgba(56,245,179,0.12);
+}
+.auth-error {
+  background: rgba(255,91,110,0.08);
+  border: 1px solid rgba(255,91,110,0.25);
+  color: var(--danger);
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: none;
+}
+.auth-error.show { display: block; }
+.auth-submit {
+  width: 100%;
+  padding: 14px;
+  background: var(--grad-primary);
+  color: #02110b;
+  font-weight: 700; font-size: 15px;
+  border-radius: var(--r-md);
+  transition: all 0.25s;
+  box-shadow: var(--shadow-glow-green);
+}
+.auth-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px rgba(56,245,179,0.55);
+}
+.auth-submit:disabled {
+  opacity: 0.6; cursor: not-allowed;
+}
+.auth-hint {
+  text-align: center;
+  font-size: 12px; color: var(--text-faint);
+  margin-top: 14px;
+}
+
+/* ============ SYNC INDICATOR ============ */
+.sync-indicator {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  padding: 5px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-left: 8px;
+}
+.sync-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--neon-green);
+  box-shadow: 0 0 8px var(--neon-green);
+}
+.sync-dot.syncing { animation: pulse 1s ease-in-out infinite; background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.sync-dot.offline { background: var(--text-faint); box-shadow: none; }
+
+.user-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px 6px 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+}
+.user-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  display: grid; place-items: center;
+  color: #02110b; font-size: 12px; font-weight: 700;
+}
+.user-email { color: var(--text-dim); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logout-btn {
+  color: var(--text-faint);
+  padding: 4px 6px; border-radius: 6px; font-size: 12px;
+  transition: all 0.2s;
+}
+.logout-btn:hover { background: rgba(255,91,110,0.12); color: var(--danger); }
+
+@media (max-width: 640px) {
+  .user-email { display: none; }
+  .auth-card { padding: 28px 22px; }
+}
+
+</style>
+</head>
+<body>
+  
+  <!-- ============ AUTH SCREEN ============ -->
+  <div class="auth-shell hidden" id="auth-shell">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12l5 5L21 4"/>
+        </svg>
+      </div>
+      <h1 class="auth-title">VK Discipline Dashboard</h1>
+      <p class="auth-sub">Sign in to sync your discipline across devices.</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-mode="login" type="button">Sign In</button>
+        <button class="auth-tab" data-mode="signup" type="button">Sign Up</button>
+      </div>
+      <form id="auth-form" autocomplete="on">
+        <div class="auth-error" id="auth-error"></div>
+        <div class="auth-field">
+          <label for="auth-email">Email</label>
+          <input type="email" id="auth-email" autocomplete="email" required placeholder="you@example.com" />
+        </div>
+        <div class="auth-field">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" autocomplete="current-password" required minlength="6" placeholder="Minimum 6 characters" />
+        </div>
+        <button type="submit" class="auth-submit" id="auth-submit">Sign In</button>
+        <p class="auth-hint">Your data is private — secured by Supabase Row Level Security.</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ BACKGROUND ATMOSPHERE ============ -->
+  <div class="bg-atmosphere" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+    <div class="noise"></div>
+  </div>
+
+  <!-- ============ CONFETTI CANVAS ============ -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- ============ STICKY TOP NAV ============ -->
+  <header class="topnav glass" id="topnav">
+    <div class="topnav-inner">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12l5 5L21 4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">VK</span>
+          <span class="brand-sub">Discipline Dashboard</span>
+        </div>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#tasks">Tasks</a>
+        <a href="#history">History</a>
+        <a href="#calendar-guide">Calendar</a>
+        <a href="#journal">Journal</a>
+      </nav>
+
+      <div class="topnav-actions">
+        <span class="sync-indicator" title="Cloud sync status">
+          <span class="sync-dot" id="sync-dot"></span>
+          <span id="sync-label">Synced</span>
+        </span>
+        <span class="user-chip" id="user-chip" style="display:none;"></span>
+        <button class="btn-ghost" id="enable-notif-btn" title="Enable Reminder Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+          </svg>
+          <span>Reminders</span>
+        </button>
+        <button class="btn-danger" id="reset-btn" title="Reset Today">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ============ WELCOME / HERO ============ -->
+    <section class="hero glass" id="dashboard">
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          <span class="pulse-dot"></span>
+          <span id="live-date">—</span>
+          <span class="dot-sep">•</span>
+          <span id="live-clock">00:00:00</span>
+        </div>
+        <h1 class="hero-greet">
+          <span id="greeting">Hello</span>,
+          <span class="grad-text">Discipline Warrior</span>
+        </h1>
+        <p class="hero-sub" id="quote-text">
+          "Discipline is choosing between what you want now and what you want most."
+        </p>
+        <div class="hero-meta">
+          <div class="meta-chip">
+            <span class="meta-label">Day</span>
+            <span class="meta-value" id="day-number">1</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Current Streak</span>
+            <span class="meta-value"><span id="current-streak">0</span>🔥</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Best</span>
+            <span class="meta-value" id="best-streak">0</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Total Done</span>
+            <span class="meta-value" id="total-completed">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="progress-ring-wrap">
+          <svg class="progress-ring" viewBox="0 0 160 160">
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="var(--neon-green)"/>
+                <stop offset="100%" stop-color="var(--neon-blue)"/>
+              </linearGradient>
+              <filter id="ringGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3.5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <circle cx="80" cy="80" r="68" class="ring-bg"/>
+            <circle cx="80" cy="80" r="68" class="ring-fg" id="progress-ring-circle" filter="url(#ringGlow)"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-percent" id="ring-percent">0%</div>
+            <div class="ring-label">Completion</div>
+          </div>
+        </div>
+        <div class="progress-bar-shell">
+          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <div class="progress-bar-meta">
+          <span id="done-count">0</span> of <span id="total-count">0</span> tasks completed
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BADGES ============ -->
+    <section class="badges-row" id="badges-row">
+      <div class="badge-card" data-badge="3">
+        <div class="badge-icon">🌱</div>
+        <div class="badge-info"><strong>3 Day Streak</strong><span>Seed planted</span></div>
+      </div>
+      <div class="badge-card" data-badge="7">
+        <div class="badge-icon">⚡</div>
+        <div class="badge-info"><strong>7 Day Streak</strong><span>Momentum on</span></div>
+      </div>
+      <div class="badge-card" data-badge="30">
+        <div class="badge-icon">👑</div>
+        <div class="badge-info"><strong>30 Day Streak</strong><span>Iron will</span></div>
+      </div>
+    </section>
+
+    <!-- ============ TASK SECTIONS ============ -->
+    <section class="tasks-wrap" id="tasks">
+      <div class="section-title">
+        <h2>Daily Checklist</h2>
+        <p>Tap each task as you complete it. Resets every day. Streaks last forever.</p>
+      </div>
+      <div class="sections-grid" id="sections-grid">
+        <!-- JS will render section cards here -->
+      </div>
+    </section>
+
+    <!-- ============ HISTORY ============ -->
+    <section class="history glass" id="history">
+      <div class="section-title inline">
+        <div>
+          <h2>Last 7 Days</h2>
+          <p>Your recent discipline footprint.</p>
+        </div>
+        <div class="history-mini-stats">
+          <div><strong id="week-avg">0%</strong><span>Avg</span></div>
+          <div><strong id="week-best">0%</strong><span>Best</span></div>
+        </div>
+      </div>
+      <div class="history-grid" id="history-grid"></div>
+    </section>
+
+    <!-- ============ NOTIFICATION INFO + CALENDAR GUIDE ============ -->
+    <section class="dual-grid">
+      <div class="info-card glass">
+        <div class="info-card-icon">⚠️</div>
+        <h3>Reminder Note</h3>
+        <p>
+          Browser notifications work best when this website is open.
+          If you close the browser or lock the phone, notifications may not always come.
+          For guaranteed daily reminders, use Google Calendar.
+          Future versions can include PWA, backend, Firebase, Supabase, or automation reminders.
+        </p>
+        <div class="info-card-actions">
+          <button class="btn-primary" id="enable-notif-btn-2">Enable Browser Reminders</button>
+          <button class="btn-ghost" id="open-reminder-settings">Reminder Settings</button>
+        </div>
+      </div>
+
+      <div class="calendar-guide glass" id="calendar-guide">
+        <div class="cg-header">
+          <div class="cg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Google Calendar Guide</h3>
+            <p>Set these recurring reminders for guaranteed alerts.</p>
+          </div>
+        </div>
+        <ul class="cg-list">
+          <li><span class="cg-time">5:00 AM</span><span>Wake Up</span></li>
+          <li><span class="cg-time">5:30 AM</span><span>Workout</span></li>
+          <li><span class="cg-time">12:00 PM</span><span>Drink Water</span></li>
+          <li><span class="cg-time">9:00 PM</span><span>Plan Tomorrow</span></li>
+          <li><span class="cg-time">10:30 PM</span><span>Sleep</span></li>
+        </ul>
+        <a class="cg-cta" href="https://calendar.google.com/" target="_blank" rel="noopener">
+          <span>Use Google Calendar For Guaranteed Reminders</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ JOURNAL ============ -->
+    <section class="journal glass" id="journal">
+      <div class="section-title">
+        <h2>Notes & Journal</h2>
+        <p>Reflect on your day. Saved locally.</p>
+      </div>
+      <textarea id="journal-text" placeholder="What worked today? What didn't? What's tomorrow's plan..."></textarea>
+      <div class="journal-meta">
+        <span id="journal-status">Auto-saved</span>
+        <button class="btn-ghost" id="clear-journal">Clear</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Built for discipline. <span class="grad-text">Stay consistent.</span></p>
+    </footer>
+  </main>
+
+  <!-- ============ REMINDER SETTINGS MODAL ============ -->
+  <div class="modal-shell" id="reminder-modal" aria-hidden="true">
+    <div class="modal glass">
+      <div class="modal-head">
+        <h3>Reminder Settings</h3>
+        <button class="modal-close" data-close-modal>✕</button>
+      </div>
+      <p class="modal-sub">Toggle on the reminders you want. Keep this tab open for them to fire.</p>
+      <div class="reminder-list" id="reminder-list">
+        <!-- JS populated -->
+      </div>
+      <div class="modal-foot">
+        <button class="btn-primary" data-close-modal>Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESET CONFIRM MODAL ============ -->
+  <div class="modal-shell" id="reset-modal" aria-hidden="true">
+    <div class="modal glass small">
+      <div class="modal-head">
+        <h3>Reset Today?</h3>
+        <button class="modal-close" data-close-modal>✕</button>
+      </div>
+      <p class="modal-sub">This unchecks all of today's tasks. Streak and history won't change.</p>
+      <div class="modal-foot">
+        <button class="btn-ghost" data-close-modal>Cancel</button>
+        <button class="btn-danger-solid" id="confirm-reset">Yes, Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TOAST ============ -->
+  <div class="toast-shell" id="toast-shell"></div>
+
+  <script>
+
+/* ============================================
+   SUPABASE CONFIG + CLIENT (loaded via UMD CDN)
+   ============================================ */
+const SUPABASE_URL = "https://tamuapfdzkbcuemszuwf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_wYiMohBZsc98U7Mhr2WpAQ_J_UANaIa";
+let supabase = null;
+let currentUser = null;
+let syncTimer = null;
+let isOnline = navigator.onLine;
+window.addEventListener('online', () => { isOnline = true; updateSyncIndicator('idle'); });
+window.addEventListener('offline', () => { isOnline = false; updateSyncIndicator('offline'); });
+
+/* ============================================================
+   VK DISCIPLINE DASHBOARD - script.js
+   Vanilla JS. LocalStorage-backed. No deps.
+   ============================================================ */
+
+/* -------------------- STORAGE KEYS -------------------- */
+const LS = {
+  SECTIONS: 'vk_sections_v1',          // sections + tasks definitions (editable)
+  DAY_STATE: 'vk_day_state_v1',        // { dateISO, completedIds: [] }
+  HISTORY:   'vk_history_v1',          // { 'YYYY-MM-DD': { done, total, pct, allDone } }
+  STREAK:    'vk_streak_v1',           // { current, best, lastCompleteDate, startDate }
+  TOTAL_COMPLETED: 'vk_total_completed_v1',
+  JOURNAL:   'vk_journal_v1',
+  REMINDERS: 'vk_reminders_v1',        // { id: enabled bool }
+  BADGES:    'vk_badges_v1',           // [3,7,30] earned
+};
+
+/* -------------------- DEFAULT DATA -------------------- */
+const DEFAULT_SECTIONS = [
+  {
+    id: 'morning', title: 'Morning Routine', icon: '🌅',
+    accent: 'linear-gradient(90deg,#ffb86c,#ff7e7e)',
+    iconBg: 'rgba(255,184,108,0.15)', iconColor: '#ffb86c',
+    tasks: [
+      { id: uid(), text: 'Wake up 5 AM' },
+      { id: uid(), text: '20 minutes workout' },
+      { id: uid(), text: 'Take cold shower' },
+      { id: uid(), text: 'Journaling' },
+    ]
+  },
+  {
+    id: 'health', title: 'Health', icon: '💪',
+    accent: 'linear-gradient(90deg,#38f5b3,#6df3ff)',
+    iconBg: 'rgba(56,245,179,0.15)', iconColor: '#38f5b3',
+    tasks: [
+      { id: uid(), text: 'Drink 4L water' },
+      { id: uid(), text: '10k steps' },
+      { id: uid(), text: 'No sugar' },
+    ]
+  },
+  {
+    id: 'growth', title: 'Personal Growth', icon: '🚀',
+    accent: 'linear-gradient(90deg,#4fb8ff,#9b8cff)',
+    iconBg: 'rgba(79,184,255,0.15)', iconColor: '#4fb8ff',
+    tasks: [
+      { id: uid(), text: 'Learn new skill' },
+      { id: uid(), text: 'Improve communication skill' },
+      { id: uid(), text: 'Work on side hustle' },
+    ]
+  },
+  {
+    id: 'detox', title: 'Digital Detox', icon: '🧘',
+    accent: 'linear-gradient(90deg,#9b8cff,#ff7ed4)',
+    iconBg: 'rgba(155,140,255,0.15)', iconColor: '#9b8cff',
+    tasks: [
+      { id: uid(), text: 'No screen time 1 hr after wakeup & before bed' },
+      { id: uid(), text: 'Offline games' },
+    ]
+  },
+  {
+    id: 'finance', title: 'Financial Growth', icon: '💰',
+    accent: 'linear-gradient(90deg,#f5c542,#ffb86c)',
+    iconBg: 'rgba(245,197,66,0.15)', iconColor: '#f5c542',
+    tasks: [
+      { id: uid(), text: 'SIP' },
+      { id: uid(), text: 'Gold & Silver ETF' },
+      { id: uid(), text: 'Emergency fund' },
+    ]
+  },
+  {
+    id: 'night', title: 'Night Routine', icon: '🌙',
+    accent: 'linear-gradient(90deg,#6df3ff,#4fb8ff)',
+    iconBg: 'rgba(109,243,255,0.15)', iconColor: '#6df3ff',
+    tasks: [
+      { id: uid(), text: 'Plan your next day' },
+      { id: uid(), text: 'Sleep at 10:30 PM' },
+      { id: uid(), text: 'Do skincare' },
+    ]
+  },
+];
+
+const QUOTES = [
+  "Discipline is choosing between what you want now and what you want most.",
+  "Small daily improvements are the key to staggering long-term results.",
+  "You don't have to be extreme, just consistent.",
+  "Motivation gets you started. Discipline keeps you going.",
+  "Success is the sum of small efforts repeated day in and day out.",
+  "Don't watch the clock; do what it does. Keep going.",
+  "Discipline is the bridge between goals and accomplishment.",
+  "Your future is created by what you do today, not tomorrow.",
+  "The pain of discipline weighs ounces; regret weighs tons.",
+  "Excellence is not an act, but a habit.",
+];
+
+const REMINDER_DEFS = [
+  { id: 'wake',   label: 'Wake Up',         time: '05:00', message: '☀️ Time to wake up! Conquer the day.' },
+  { id: 'workout',label: 'Workout',         time: '05:30', message: '💪 20 minutes workout — let’s move.' },
+  { id: 'water',  label: 'Drink Water',     time: '12:00', message: '💧 Hydrate! Stay on track with 4L today.' },
+  { id: 'plan',   label: 'Plan Tomorrow',   time: '21:00', message: '🗒️ Plan tomorrow. Win the morning.' },
+  { id: 'sleep',  label: 'Sleep',           time: '22:30', message: '🌙 Time to sleep. 10:30 PM target.' },
+];
+
+/* -------------------- HELPERS -------------------- */
+function uid() { return 't_' + Math.random().toString(36).slice(2, 10); }
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function daysBetween(aISO, bISO) {
+  const a = new Date(aISO + 'T00:00:00');
+  const b = new Date(bISO + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
+}
+function addDaysISO(iso, n) {
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return todayFromDate(d);
+}
+function todayFromDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function readJSON(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch { return fallback; }
+}
+function writeJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]));
+}
+
+/* -------------------- STATE LOADERS -------------------- */
+function loadSections() {
+  const stored = readJSON(LS.SECTIONS, null);
+  if (stored && Array.isArray(stored) && stored.length) return stored;
+  writeJSON(LS.SECTIONS, DEFAULT_SECTIONS);
+  return DEFAULT_SECTIONS;
+}
+function saveSections(s) { writeJSON(LS.SECTIONS, s); scheduleSync && scheduleSync(); }
+
+function loadDayState() {
+  const t = todayISO();
+  const stored = readJSON(LS.DAY_STATE, null);
+  if (stored && stored.dateISO === t) return stored;
+  // New day -> reset checklist
+  const fresh = { dateISO: t, completedIds: [] };
+  writeJSON(LS.DAY_STATE, fresh);
+  return fresh;
+}
+function saveDayState(ds) { writeJSON(LS.DAY_STATE, ds); scheduleSync && scheduleSync(); }
+
+function loadStreak() {
+  return readJSON(LS.STREAK, {
+    current: 0,
+    best: 0,
+    lastCompleteDate: null, // ISO date of last day where allDone happened
+    startDate: todayISO(),
+  });
+}
+function saveStreak(s) { writeJSON(LS.STREAK, s); scheduleSync && scheduleSync(); }
+
+function loadHistory() { return readJSON(LS.HISTORY, {}); }
+function saveHistory(h) { writeJSON(LS.HISTORY, h); /* history derived */ }
+
+function loadTotal() { return readJSON(LS.TOTAL_COMPLETED, 0); }
+function saveTotal(n) { writeJSON(LS.TOTAL_COMPLETED, n); scheduleSync && scheduleSync(); }
+
+function loadReminders() {
+  const stored = readJSON(LS.REMINDERS, null);
+  if (stored) return stored;
+  const init = {};
+  REMINDER_DEFS.forEach(r => init[r.id] = false);
+  writeJSON(LS.REMINDERS, init);
+  return init;
+}
+function saveReminders(r) { writeJSON(LS.REMINDERS, r); scheduleSync && scheduleSync(); }
+
+function loadBadges() { return readJSON(LS.BADGES, []); }
+function saveBadges(b) { writeJSON(LS.BADGES, b); scheduleSync && scheduleSync(); }
+
+/* -------------------- GLOBAL STATE -------------------- */
+let sections = loadSections();
+let dayState = loadDayState();
+let streak   = loadStreak();
+let history  = loadHistory();
+let totalCompleted = loadTotal();
+let reminders = loadReminders();
+let earnedBadges = loadBadges();
+
+/* On load, also handle missed days streak reset:
+   If last completed date isn't yesterday or today AND there was a streak — reset. */
+(function handleStreakOnLoad() {
+  const t = todayISO();
+  if (streak.lastCompleteDate && streak.current > 0) {
+    const gap = daysBetween(streak.lastCompleteDate, t);
+    if (gap > 1) {
+      streak.current = 0;
+      saveStreak(streak);
+    }
+  }
+})();
+
+/* -------------------- DOM REFS -------------------- */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const sectionsGrid = $('#sections-grid');
+const historyGrid  = $('#history-grid');
+const liveClock    = $('#live-clock');
+const liveDate     = $('#live-date');
+const greeting     = $('#greeting');
+const quoteText    = $('#quote-text');
+const dayNumberEl  = $('#day-number');
+const currentStreakEl = $('#current-streak');
+const bestStreakEl    = $('#best-streak');
+const totalCompletedEl = $('#total-completed');
+const ringPercentEl = $('#ring-percent');
+const ringCircle    = $('#progress-ring-circle');
+const progressBar   = $('#progress-bar-fill');
+const doneCountEl   = $('#done-count');
+const totalCountEl  = $('#total-count');
+const journalText   = $('#journal-text');
+const journalStatus = $('#journal-status');
+const weekAvgEl     = $('#week-avg');
+const weekBestEl    = $('#week-best');
+const toastShell    = $('#toast-shell');
+const confettiCanvas = $('#confetti-canvas');
+
+/* -------------------- RENDER: SECTIONS -------------------- */
+function renderSections() {
+  sectionsGrid.innerHTML = '';
+  sections.forEach(section => {
+    const card = document.createElement('div');
+    card.className = 'task-section';
+    card.style.setProperty('--section-accent', section.accent);
+    card.style.setProperty('--section-icon-bg', section.iconBg);
+    card.style.setProperty('--section-icon-color', section.iconColor);
+
+    const doneCount = section.tasks.filter(t => dayState.completedIds.includes(t.id)).length;
+
+    card.innerHTML = `
+      <div class="task-section-head">
+        <div class="titlewrap">
+          <div class="icon">${section.icon}</div>
+          <h3>${escapeHTML(section.title)}</h3>
+        </div>
+        <span class="count" data-count="${section.id}">${doneCount}/${section.tasks.length}</span>
+      </div>
+      <div class="task-list" data-list="${section.id}"></div>
+      <div class="add-task-wrap">
+        <input class="add-task-input" type="text" placeholder="Add custom task…" data-add-input="${section.id}" maxlength="80" />
+        <button class="add-task-btn" data-add-btn="${section.id}" aria-label="Add task">+</button>
+      </div>
+    `;
+
+    const listEl = card.querySelector(`[data-list="${section.id}"]`);
+    section.tasks.forEach(task => listEl.appendChild(renderTaskItem(section.id, task)));
+
+    // Add task wiring
+    const input = card.querySelector(`[data-add-input="${section.id}"]`);
+    const addBtn = card.querySelector(`[data-add-btn="${section.id}"]`);
+    const doAdd = () => {
+      const val = input.value.trim();
+      if (!val) return;
+      const newTask = { id: uid(), text: val };
+      const sec = sections.find(s => s.id === section.id);
+      sec.tasks.push(newTask);
+      saveSections(sections);
+      input.value = '';
+      renderSections();
+      updateProgress();
+      showToast('✅', 'Task added');
+    };
+    addBtn.addEventListener('click', doAdd);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+
+    sectionsGrid.appendChild(card);
+  });
+}
+
+function renderTaskItem(sectionId, task) {
+  const item = document.createElement('div');
+  const completed = dayState.completedIds.includes(task.id);
+  item.className = 'task-item' + (completed ? ' completed' : '');
+  item.dataset.taskId = task.id;
+  item.innerHTML = `
+    <span class="task-burst"></span>
+    <button class="task-check" aria-label="Toggle complete">
+      <svg viewBox="0 0 24 24"><polyline points="4,12 10,18 20,6"/></svg>
+    </button>
+    <span class="task-label">${escapeHTML(task.text)}</span>
+    <button class="task-delete" aria-label="Delete task">
+      <svg viewBox="0 0 24 24"><polyline points="6,6 18,18"/><polyline points="6,18 18,6"/></svg>
+    </button>
+  `;
+  item.querySelector('.task-check').addEventListener('click', () => toggleTask(sectionId, task.id, item));
+  item.querySelector('.task-label').addEventListener('click', () => toggleTask(sectionId, task.id, item));
+  item.querySelector('.task-delete').addEventListener('click', e => {
+    e.stopPropagation();
+    deleteTask(sectionId, task.id);
+  });
+  return item;
+}
+
+/* -------------------- TASK ACTIONS -------------------- */
+function toggleTask(sectionId, taskId, itemEl) {
+  const idx = dayState.completedIds.indexOf(taskId);
+  if (idx === -1) {
+    // marking complete
+    dayState.completedIds.push(taskId);
+    totalCompleted += 1;
+    saveTotal(totalCompleted);
+    itemEl.classList.add('bursting');
+    setTimeout(() => itemEl.classList.remove('bursting'), 700);
+  } else {
+    dayState.completedIds.splice(idx, 1);
+    totalCompleted = Math.max(0, totalCompleted - 1);
+    saveTotal(totalCompleted);
+  }
+  itemEl.classList.toggle('completed');
+  saveDayState(dayState);
+  updateSectionCount(sectionId);
+  updateProgress();
+}
+
+function updateSectionCount(sectionId) {
+  const sec = sections.find(s => s.id === sectionId);
+  if (!sec) return;
+  const done = sec.tasks.filter(t => dayState.completedIds.includes(t.id)).length;
+  const el = document.querySelector(`[data-count="${sectionId}"]`);
+  if (el) el.textContent = `${done}/${sec.tasks.length}`;
+}
+
+function deleteTask(sectionId, taskId) {
+  const sec = sections.find(s => s.id === sectionId);
+  if (!sec) return;
+  sec.tasks = sec.tasks.filter(t => t.id !== taskId);
+  // remove from completed if present
+  dayState.completedIds = dayState.completedIds.filter(id => id !== taskId);
+  saveSections(sections);
+  saveDayState(dayState);
+  renderSections();
+  updateProgress();
+  showToast('🗑️', 'Task deleted');
+}
+
+/* -------------------- PROGRESS / STREAK -------------------- */
+function getTaskCounts() {
+  let total = 0;
+  sections.forEach(s => total += s.tasks.length);
+  const done = dayState.completedIds.length;
+  return { done, total };
+}
+
+function updateProgress() {
+  const { done, total } = getTaskCounts();
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+  ringPercentEl.textContent = pct + '%';
+  // ring circumference = 2 * pi * 68 ≈ 427.26
+  const circ = 427;
+  ringCircle.style.strokeDashoffset = circ - (circ * pct) / 100;
+  progressBar.style.width = pct + '%';
+  doneCountEl.textContent = done;
+  totalCountEl.textContent = total;
+  totalCompletedEl.textContent = totalCompleted;
+
+  // Update day's history snapshot
+  const t = todayISO();
+  history[t] = {
+    done, total, pct,
+    allDone: total > 0 && done === total,
+  };
+  saveHistory(history);
+
+  // Streak logic — only mark "complete" once per day when allDone is true
+  if (total > 0 && done === total) {
+    if (streak.lastCompleteDate !== t) {
+      // determine gap from previous
+      if (streak.lastCompleteDate) {
+        const gap = daysBetween(streak.lastCompleteDate, t);
+        streak.current = gap === 1 ? streak.current + 1 : 1;
+      } else {
+        streak.current = 1;
+      }
+      streak.lastCompleteDate = t;
+      if (streak.current > streak.best) streak.best = streak.current;
+      saveStreak(streak);
+      celebrateAllDone();
+      checkBadges();
+    }
+  } else {
+    // If user un-checks a task to drop below 100% on same day, revert today's streak credit
+    if (streak.lastCompleteDate === t) {
+      // we previously credited today; uncredit
+      // recompute current based on prior day
+      const prior = addDaysISO(t, -1);
+      const priorHist = history[prior];
+      const priorAll = priorHist && priorHist.allDone;
+      streak.lastCompleteDate = priorAll ? prior : null;
+      // Re-derive current
+      streak.current = recomputeCurrentStreak(streak.lastCompleteDate);
+      saveStreak(streak);
+    }
+  }
+
+  currentStreakEl.textContent = streak.current;
+  bestStreakEl.textContent = streak.best;
+
+  // Day number
+  const startISO = streak.startDate || todayISO();
+  dayNumberEl.textContent = Math.max(1, daysBetween(startISO, t) + 1);
+
+  renderHistory();
+  renderBadges();
+}
+
+function recomputeCurrentStreak(lastDateISO) {
+  if (!lastDateISO) return 0;
+  let count = 0;
+  let cursor = lastDateISO;
+  while (true) {
+    const h = history[cursor];
+    if (h && h.allDone) {
+      count++;
+      cursor = addDaysISO(cursor, -1);
+    } else break;
+  }
+  return count;
+}
+
+/* -------------------- HISTORY RENDER -------------------- */
+function renderHistory() {
+  historyGrid.innerHTML = '';
+  const t = todayISO();
+  const days = [];
+  for (let i = 6; i >= 0; i--) days.push(addDaysISO(t, -i));
+
+  let sum = 0, count = 0, best = 0;
+  days.forEach(iso => {
+    const h = history[iso];
+    const pct = h ? h.pct : 0;
+    const isToday = iso === t;
+    if (h) { sum += pct; count++; if (pct > best) best = pct; }
+
+    const d = new Date(iso + 'T00:00:00');
+    const dayName = d.toLocaleDateString(undefined, { weekday: 'short' });
+    const dateNum = d.getDate();
+
+    const card = document.createElement('div');
+    card.className = 'history-card' + (isToday ? ' today' : '');
+    card.innerHTML = `
+      <div class="history-day">${dayName}</div>
+      <div class="history-date">${dateNum}</div>
+      <div class="history-mini-bar"><div style="width:${pct}%"></div></div>
+      <div class="history-percent ${h ? '' : 'empty'}">${h ? pct + '%' : '—'}</div>
+      <div class="history-streak">${h && h.allDone ? '🔥' : '·'}</div>
+    `;
+    historyGrid.appendChild(card);
+  });
+
+  weekAvgEl.textContent  = (count ? Math.round(sum / count) : 0) + '%';
+  weekBestEl.textContent = best + '%';
+}
+
+/* -------------------- BADGES -------------------- */
+function renderBadges() {
+  $$('.badge-card').forEach(el => {
+    const target = parseInt(el.dataset.badge, 10);
+    if (streak.best >= target) el.classList.add('earned');
+    else el.classList.remove('earned');
+  });
+}
+function checkBadges() {
+  [3, 7, 30].forEach(n => {
+    if (streak.current >= n && !earnedBadges.includes(n)) {
+      earnedBadges.push(n);
+      saveBadges(earnedBadges);
+      showToast('🏆', `${n}-day streak badge unlocked!`);
+    }
+  });
+}
+
+/* -------------------- CLOCK & GREETING -------------------- */
+function tickClock() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  liveClock.textContent = `${hh}:${mm}:${ss}`;
+
+  liveDate.textContent = d.toLocaleDateString(undefined, {
+    weekday: 'long', month: 'long', day: 'numeric'
+  });
+
+  const h = d.getHours();
+  let g = 'Good Evening';
+  if (h < 12) g = 'Good Morning';
+  else if (h < 17) g = 'Good Afternoon';
+  greeting.textContent = g;
+}
+
+/* -------------------- QUOTE -------------------- */
+function setDailyQuote() {
+  // Stable for the day (hash from date)
+  const t = todayISO();
+  let hash = 0;
+  for (let i = 0; i < t.length; i++) hash = (hash * 31 + t.charCodeAt(i)) >>> 0;
+  quoteText.textContent = `"${QUOTES[hash % QUOTES.length]}"`;
+}
+
+/* -------------------- JOURNAL -------------------- */
+function initJournal() {
+  journalText.value = localStorage.getItem(LS.JOURNAL) || '';
+  let timer;
+  journalText.addEventListener('input', () => {
+    journalStatus.textContent = 'Saving…';
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      localStorage.setItem(LS.JOURNAL, journalText.value);
+      journalStatus.textContent = 'Auto-saved';
+      scheduleSync && scheduleSync();
+    }, 350);
+  });
+  $('#clear-journal').addEventListener('click', () => {
+    if (!journalText.value) return;
+    if (confirm('Clear your journal?')) {
+      journalText.value = '';
+      localStorage.setItem(LS.JOURNAL, '');
+      journalStatus.textContent = 'Cleared';
+    }
+  });
+}
+
+/* -------------------- TOASTS -------------------- */
+function showToast(icon, msg, ms = 2800) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-icon">${icon}</span><span>${escapeHTML(msg)}</span>`;
+  toastShell.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('removing');
+    setTimeout(() => t.remove(), 300);
+  }, ms);
+}
+
+/* -------------------- MODALS -------------------- */
+function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add('open'); m && m.setAttribute('aria-hidden', 'false'); }
+function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('open'); m && m.setAttribute('aria-hidden', 'true'); }
+
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-close-modal]')) {
+    e.target.closest('.modal-shell').classList.remove('open');
+  } else if (e.target.classList.contains('modal-shell')) {
+    e.target.classList.remove('open');
+  }
+});
+
+/* -------------------- RESET TODAY -------------------- */
+$('#reset-btn').addEventListener('click', () => openModal('reset-modal'));
+$('#confirm-reset').addEventListener('click', () => {
+  // subtract today's completions from total so it stays consistent
+  totalCompleted = Math.max(0, totalCompleted - dayState.completedIds.length);
+  saveTotal(totalCompleted);
+  dayState.completedIds = [];
+  saveDayState(dayState);
+  // Reset history for today
+  history[todayISO()] = { done: 0, total: getTaskCounts().total, pct: 0, allDone: false };
+  saveHistory(history);
+  // If today was credited toward streak — uncredit
+  if (streak.lastCompleteDate === todayISO()) {
+    const prior = addDaysISO(todayISO(), -1);
+    const priorAll = history[prior] && history[prior].allDone;
+    streak.lastCompleteDate = priorAll ? prior : null;
+    streak.current = recomputeCurrentStreak(streak.lastCompleteDate);
+    saveStreak(streak);
+  }
+  closeModal('reset-modal');
+  renderSections();
+  updateProgress();
+  showToast('🔄', 'Today’s tasks reset');
+});
+
+/* -------------------- NOTIFICATIONS -------------------- */
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    showToast('⚠️', 'Notifications not supported on this browser');
+    return false;
+  }
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') {
+    showToast('⚠️', 'Notifications blocked. Enable from site settings.');
+    return false;
+  }
+  const res = await Notification.requestPermission();
+  if (res === 'granted') {
+    showToast('🔔', 'Notifications enabled!');
+    return true;
+  }
+  showToast('⚠️', 'Permission not granted');
+  return false;
+}
+
+$('#enable-notif-btn').addEventListener('click', async () => {
+  const ok = await requestNotificationPermission();
+  if (ok) openModal('reminder-modal');
+});
+$('#enable-notif-btn-2').addEventListener('click', async () => {
+  const ok = await requestNotificationPermission();
+  if (ok) openModal('reminder-modal');
+});
+$('#open-reminder-settings').addEventListener('click', () => openModal('reminder-modal'));
+
+function renderReminderList() {
+  const wrap = $('#reminder-list');
+  wrap.innerHTML = '';
+  REMINDER_DEFS.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'reminder-row';
+    const on = !!reminders[r.id];
+    row.innerHTML = `
+      <div class="reminder-row-info">
+        <strong>${r.label}</strong>
+        <span>${r.time}</span>
+      </div>
+      <div class="switch ${on ? 'on' : ''}" data-rem="${r.id}" role="switch" aria-checked="${on}" tabindex="0"></div>
+    `;
+    const sw = row.querySelector('.switch');
+    sw.addEventListener('click', () => {
+      reminders[r.id] = !reminders[r.id];
+      saveReminders(reminders);
+      sw.classList.toggle('on');
+      sw.setAttribute('aria-checked', String(reminders[r.id]));
+      showToast(reminders[r.id] ? '🔔' : '🔕', `${r.label} ${reminders[r.id] ? 'enabled' : 'disabled'}`);
+    });
+    wrap.appendChild(row);
+  });
+}
+
+/* Reminder ticker — checks every 30s.
+   Fires once per HH:MM window per day. */
+const firedToday = {}; // { 'YYYY-MM-DD_id': true }
+function checkReminders() {
+  const now = new Date();
+  const t = todayISO();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const cur = `${hh}:${mm}`;
+
+  REMINDER_DEFS.forEach(r => {
+    if (!reminders[r.id]) return;
+    const key = `${t}_${r.id}`;
+    if (firedToday[key]) return;
+    if (r.time === cur) {
+      fireReminder(r);
+      firedToday[key] = true;
+    }
+  });
+}
+function fireReminder(r) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(`VK Discipline · ${r.label}`, {
+        body: r.message,
+        icon: undefined,
+      });
+    } catch (e) { /* ignore */ }
+  }
+  // In-app fallback toast as well
+  showToast('🔔', `${r.label}: ${r.message}`, 6000);
+}
+
+/* -------------------- CONFETTI -------------------- */
+let confettiCtx, confettiW, confettiH, confettiParticles = [], confettiRunning = false;
+function setupConfetti() {
+  confettiCtx = confettiCanvas.getContext('2d');
+  resizeConfetti();
+  window.addEventListener('resize', resizeConfetti);
+}
+function resizeConfetti() {
+  confettiW = confettiCanvas.width = window.innerWidth;
+  confettiH = confettiCanvas.height = window.innerHeight;
+}
+function launchConfetti() {
+  if (!confettiCtx) setupConfetti();
+  confettiParticles = [];
+  const colors = ['#38f5b3', '#4fb8ff', '#6df3ff', '#9b8cff', '#f5c542'];
+  for (let i = 0; i < 140; i++) {
+    confettiParticles.push({
+      x: Math.random() * confettiW,
+      y: -20 - Math.random() * 200,
+      r: 4 + Math.random() * 5,
+      c: colors[Math.floor(Math.random() * colors.length)],
+      vx: (Math.random() - 0.5) * 4,
+      vy: 2 + Math.random() * 4,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.2,
+    });
+  }
+  if (!confettiRunning) {
+    confettiRunning = true;
+    runConfetti();
+  }
+}
+function runConfetti() {
+  confettiCtx.clearRect(0, 0, confettiW, confettiH);
+  confettiParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.angle += p.spin;
+    confettiCtx.save();
+    confettiCtx.translate(p.x, p.y);
+    confettiCtx.rotate(p.angle);
+    confettiCtx.fillStyle = p.c;
+    confettiCtx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 1.6);
+    confettiCtx.restore();
+  });
+  confettiParticles = confettiParticles.filter(p => p.y < confettiH + 40);
+  if (confettiParticles.length > 0) {
+    requestAnimationFrame(runConfetti);
+  } else {
+    confettiRunning = false;
+    confettiCtx.clearRect(0, 0, confettiW, confettiH);
+  }
+}
+
+let lastCelebrationDate = null;
+function celebrateAllDone() {
+  const t = todayISO();
+  if (lastCelebrationDate === t) return;
+  lastCelebrationDate = t;
+  launchConfetti();
+  showToast('🎉', 'All tasks done! Streak +1');
+}
+
+/* -------------------- INIT -------------------- */
+function init() {
+  // Clock
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  setDailyQuote();
+
+  // Render
+  renderSections();
+  renderReminderList();
+  updateProgress();
+  initJournal();
+
+  // Reminder loop (every 30s)
+  setInterval(checkReminders, 30 * 1000);
+
+  // Handle date rollover while tab open
+  setInterval(() => {
+    const stored = readJSON(LS.DAY_STATE, null);
+    if (!stored || stored.dateISO !== todayISO()) {
+      dayState = loadDayState();
+      renderSections();
+      updateProgress();
+      showToast('🌅', 'New day! Checklist reset.');
+    }
+  }, 60 * 1000);
+}
+
+/* App init triggered post-auth via onLoginSuccess; also keep guest fallback */
+window.__vkInitApp = init;
+
+
+
+/* ============================================
+   AUTH UI
+   ============================================ */
+function setupAuthUI() {
+  const tabs = document.querySelectorAll('.auth-tab');
+  const submitBtn = document.getElementById('auth-submit');
+  const errorBox = document.getElementById('auth-error');
+  let mode = 'login';
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      mode = tab.dataset.mode;
+      submitBtn.textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+      errorBox.classList.remove('show');
+    });
+  });
+
+  document.getElementById('auth-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove('show');
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    if (!email || !password) {
+      showAuthError('Email and password required');
+      return;
+    }
+    if (password.length < 6) {
+      showAuthError('Password must be at least 6 characters');
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = mode === 'login' ? 'Signing in…' : 'Creating account…';
+    try {
+      if (mode === 'login') {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await onLoginSuccess(data.user);
+      } else {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        if (data.user && !data.session) {
+          showAuthError('Check your email to confirm your account, then sign in.');
+          // Switch to login tab
+          tabs[0].click();
+        } else if (data.user) {
+          await onLoginSuccess(data.user);
+        }
+      }
+    } catch (err) {
+      showAuthError(err.message || 'Authentication failed');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+    }
+  });
+}
+
+function showAuthError(msg) {
+  const errorBox = document.getElementById('auth-error');
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+}
+
+let __appInited = false;
+async function onLoginSuccess(user) {
+  currentUser = user;
+  document.getElementById('auth-shell').classList.add('hidden');
+  await pullFromCloud();
+  renderUserChip();
+  // Reload UI with cloud data
+  renderSections();
+  renderReminderList();
+  updateProgress();
+  journalText.value = (await loadProfile()).journal || journalText.value || '';
+  if (!__appInited) { window.__vkInitApp && window.__vkInitApp(); __appInited = true; }
+  updateSyncIndicator('idle');
+}
+
+function renderUserChip() {
+  if (!currentUser) return;
+  const chip = document.getElementById('user-chip');
+  const initial = (currentUser.email || '?').charAt(0).toUpperCase();
+  chip.innerHTML = `
+    <span class="user-avatar">${initial}</span>
+    <span class="user-email">${escapeHTML(currentUser.email)}</span>
+    <button class="logout-btn" id="logout-btn" title="Logout">⎋</button>
+  `;
+  chip.style.display = 'inline-flex';
+  document.getElementById('logout-btn').addEventListener('click', logout);
+}
+
+async function logout() {
+  if (!confirm('Sign out? Local data stays on this device.')) return;
+  await supabase.auth.signOut();
+  currentUser = null;
+  document.getElementById('auth-shell').classList.remove('hidden');
+  document.getElementById('user-chip').style.display = 'none';
+  // Clear form
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+}
+
+/* ============================================
+   SYNC INDICATOR
+   ============================================ */
+function updateSyncIndicator(state) {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  if (!dot) return;
+  dot.classList.remove('syncing', 'offline');
+  if (!isOnline) {
+    dot.classList.add('offline');
+    label.textContent = 'Offline';
+  } else if (state === 'syncing') {
+    dot.classList.add('syncing');
+    label.textContent = 'Syncing…';
+  } else {
+    label.textContent = 'Synced';
+  }
+}
+
+/* ============================================
+   CLOUD: PULL + PUSH
+   ============================================ */
+async function pullFromCloud() {
+  if (!currentUser || !isOnline) return;
+  updateSyncIndicator('syncing');
+  try {
+    // 1. Sections
+    const { data: secData, error: secErr } = await supabase
+      .from('vk_sections')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('sort_order', { ascending: true });
+    if (secErr) throw secErr;
+
+    if (secData && secData.length > 0) {
+      sections = secData.map(row => ({
+        id: row.id,
+        title: row.title,
+        icon: row.icon,
+        accent: row.accent,
+        iconBg: row.icon_bg,
+        iconColor: row.icon_color,
+        tasks: row.tasks || []
+      }));
+      saveSections(sections);
+    } else {
+      // First time: push defaults to cloud
+      await pushAllSections();
+    }
+
+    // 2. Profile (streak, badges, journal, reminders, total)
+    const profile = await loadProfile();
+    if (profile) {
+      streak = {
+        current: profile.current_streak || 0,
+        best: profile.best_streak || 0,
+        lastCompleteDate: profile.last_complete_date || null,
+        startDate: profile.start_date || todayISO(),
+      };
+      saveStreak(streak);
+      totalCompleted = profile.total_completed || 0;
+      saveTotal(totalCompleted);
+      earnedBadges = profile.earned_badges || [];
+      saveBadges(earnedBadges);
+      if (profile.reminders && Object.keys(profile.reminders).length) {
+        reminders = profile.reminders;
+        saveReminders(reminders);
+      }
+      if (profile.journal != null) {
+        localStorage.setItem(LS.JOURNAL, profile.journal);
+      }
+    }
+
+    // 3. History (last 14 days)
+    const since = addDaysISO(todayISO(), -13);
+    const { data: daysData, error: daysErr } = await supabase
+      .from('vk_days')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .gte('date_iso', since);
+    if (daysErr) throw daysErr;
+    const cloudHistory = {};
+    (daysData || []).forEach(d => {
+      cloudHistory[d.date_iso] = {
+        done: d.done_count,
+        total: d.total_count,
+        pct: d.pct,
+        allDone: d.all_done,
+      };
+    });
+    // Merge: cloud wins
+    history = { ...history, ...cloudHistory };
+    saveHistory(history);
+
+    // 4. Today's completion state
+    const t = todayISO();
+    const todayRow = (daysData || []).find(d => d.date_iso === t);
+    if (todayRow) {
+      dayState = { dateISO: t, completedIds: todayRow.completed_ids || [] };
+      saveDayState(dayState);
+    }
+
+    updateSyncIndicator('idle');
+  } catch (err) {
+    console.error('Pull failed:', err);
+    updateSyncIndicator('idle');
+    showToast('⚠️', 'Sync failed — using local data');
+  }
+}
+
+async function loadProfile() {
+  if (!currentUser) return null;
+  const { data, error } = await supabase
+    .from('vk_profile')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+  if (error) {
+    console.error('Profile load error:', error);
+    return null;
+  }
+  if (!data) {
+    // Create one
+    const { data: newProf } = await supabase
+      .from('vk_profile')
+      .insert({ user_id: currentUser.id, start_date: todayISO() })
+      .select()
+      .single();
+    return newProf;
+  }
+  return data;
+}
+
+async function pushAllSections() {
+  if (!currentUser || !isOnline) return;
+  const rows = sections.map((s, i) => ({
+    id: s.id,
+    user_id: currentUser.id,
+    title: s.title,
+    icon: s.icon,
+    accent: s.accent,
+    icon_bg: s.iconBg,
+    icon_color: s.iconColor,
+    sort_order: i,
+    tasks: s.tasks,
+    updated_at: new Date().toISOString(),
+  }));
+  const { error } = await supabase
+    .from('vk_sections')
+    .upsert(rows, { onConflict: 'id' });
+  if (error) console.error('Push sections error:', error);
+}
+
+async function pushDay() {
+  if (!currentUser || !isOnline) return;
+  const { done, total } = getTaskCounts();
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  const allDone = total > 0 && done === total;
+  const row = {
+    user_id: currentUser.id,
+    date_iso: todayISO(),
+    completed_ids: dayState.completedIds,
+    done_count: done,
+    total_count: total,
+    pct, all_done: allDone,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await supabase
+    .from('vk_days')
+    .upsert(row, { onConflict: 'user_id,date_iso' });
+  if (error) console.error('Push day error:', error);
+}
+
+async function pushProfile() {
+  if (!currentUser || !isOnline) return;
+  const row = {
+    user_id: currentUser.id,
+    current_streak: streak.current,
+    best_streak: streak.best,
+    last_complete_date: streak.lastCompleteDate,
+    start_date: streak.startDate,
+    total_completed: totalCompleted,
+    earned_badges: earnedBadges,
+    journal: localStorage.getItem(LS.JOURNAL) || '',
+    reminders: reminders,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await supabase
+    .from('vk_profile')
+    .upsert(row, { onConflict: 'user_id' });
+  if (error) console.error('Push profile error:', error);
+}
+
+/* Debounced push — call after any change */
+function scheduleSync() {
+  if (!currentUser) return;
+  updateSyncIndicator('syncing');
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(async () => {
+    await Promise.all([pushDay(), pushProfile(), pushAllSections()]);
+    updateSyncIndicator('idle');
+  }, 800);
+}
+
+/* ============================================
+   AUTH BOOT
+   ============================================ */
+async function bootAuth() {
+  try {
+    // Wait for Supabase SDK to be ready (loaded from <head>)
+    let tries = 0;
+    while (!window.supabase && tries < 50) {
+      await new Promise(r => setTimeout(r, 100));
+      tries++;
+    }
+    if (!window.supabase) {
+      throw new Error('Supabase SDK failed to load. Check your internet connection.');
+    }
+
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    setupAuthUI();
+
+    // Check existing session
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Session error:', error);
+    }
+    if (session && session.user) {
+      await onLoginSuccess(session.user);
+    } else {
+      document.getElementById('auth-shell').classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('Boot error:', err);
+    // Show error in auth screen
+    const shell = document.getElementById('auth-shell');
+    if (shell) {
+      shell.classList.remove('hidden');
+      const errorBox = document.getElementById('auth-error');
+      if (errorBox) {
+        errorBox.textContent = 'Setup error: ' + (err.message || err);
+        errorBox.classList.add('show');
+      }
+    } else {
+      alert('Setup error: ' + (err.message || err));
+    }
+  }
+}
+
+// Global error handler to surface real errors
+window.addEventListener('error', (e) => {
+  console.error('Global error:', e.error || e.message, 'at', e.filename, e.lineno);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+});
+
+document.addEventListener('DOMContentLoaded', bootAuth);
+
+</script>
+</body>
+</html>
