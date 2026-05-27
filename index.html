@@ -1001,6 +1001,185 @@ img, svg { display: block; max-width: 100%; }
   .auth-card { padding: 28px 22px; }
 }
 
+
+
+/* ============ HEATMAP CALENDAR ============ */
+.heatmap-section { padding: 26px; }
+.heatmap-head {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 16px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.heatmap-stats { display: flex; gap: 10px; flex-shrink: 0; }
+.heatmap-stat {
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  display: flex; flex-direction: column; align-items: center;
+}
+.heatmap-stat strong {
+  font-size: 16px; font-family: var(--font-mono);
+  background: var(--grad-primary);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.heatmap-stat span { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.6px; }
+
+.heatmap-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  margin: 0 -4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56,245,179,0.3) transparent;
+}
+.heatmap-scroll::-webkit-scrollbar { height: 6px; }
+.heatmap-scroll::-webkit-scrollbar-track { background: transparent; }
+.heatmap-scroll::-webkit-scrollbar-thumb { background: rgba(56,245,179,0.25); border-radius: 999px; }
+
+.heatmap-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  min-width: 100%;
+}
+.heatmap-months {
+  display: flex;
+  gap: 3px;
+  margin-left: 26px;
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  height: 14px;
+  position: relative;
+}
+.heatmap-month-label {
+  position: absolute;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.heatmap-body {
+  display: flex;
+  gap: 6px;
+}
+.heatmap-days-col {
+  display: flex; flex-direction: column;
+  gap: 3px;
+  font-size: 9px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  padding-top: 0;
+}
+.heatmap-day-label {
+  width: 20px; height: 11px;
+  line-height: 11px;
+  text-align: right;
+  padding-right: 4px;
+}
+.heatmap-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 11px);
+  gap: 3px;
+}
+.heatmap-cell {
+  width: 11px; height: 11px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.heatmap-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+.heatmap-cell:not(.empty):hover {
+  outline: 1.5px solid var(--neon-green);
+  outline-offset: 1px;
+  transform: scale(1.4);
+  z-index: 5;
+}
+.heatmap-cell.today { outline: 1.5px solid var(--neon-blue); outline-offset: 1px; }
+
+/* Heat levels: 0=empty, 1-4 increasing */
+.heatmap-cell.lvl-0 { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.05); }
+.heatmap-cell.lvl-1 { background: rgba(56,245,179,0.25); border-color: rgba(56,245,179,0.15); }
+.heatmap-cell.lvl-2 { background: rgba(56,245,179,0.5); border-color: rgba(56,245,179,0.3); }
+.heatmap-cell.lvl-3 { background: rgba(56,245,179,0.75); border-color: rgba(56,245,179,0.5); }
+.heatmap-cell.lvl-4 {
+  background: linear-gradient(135deg, #38f5b3, #4fb8ff);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 8px rgba(56,245,179,0.6);
+}
+
+.heatmap-legend {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--text-faint);
+  margin-top: 14px; justify-content: flex-end;
+  font-family: var(--font-mono);
+}
+.heatmap-legend-cells { display: flex; gap: 3px; }
+.heatmap-legend-cells .heatmap-cell { cursor: default; }
+.heatmap-legend-cells .heatmap-cell:hover { transform: none; outline: none; }
+
+/* Tooltip */
+.heatmap-tooltip {
+  position: fixed;
+  background: rgba(8, 14, 22, 0.95);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(12px);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  box-shadow: var(--shadow-soft);
+}
+.heatmap-tooltip.show { opacity: 1; }
+.heatmap-tooltip strong {
+  display: block;
+  color: var(--neon-green);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.heatmap-year-nav {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+}
+.heatmap-year-nav button {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  display: grid; place-items: center;
+  transition: all 0.2s;
+}
+.heatmap-year-nav button:hover:not(:disabled) {
+  background: rgba(56,245,179,0.1);
+  color: var(--neon-green);
+  border-color: var(--border-strong);
+}
+.heatmap-year-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+.heatmap-year-label {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 50px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .heatmap-section { padding: 20px 16px; }
+  .heatmap-head { flex-direction: column; align-items: stretch; }
+  .heatmap-stats { justify-content: space-between; }
+  .heatmap-day-label { font-size: 8px; }
+}
+
 </style>
 </head>
 <body>
@@ -1066,6 +1245,7 @@ img, svg { display: block; max-width: 100%; }
         <a href="#dashboard">Dashboard</a>
         <a href="#tasks">Tasks</a>
         <a href="#history">History</a>
+        <a href="#full-history">All Time</a>
         <a href="#calendar-guide">Calendar</a>
         <a href="#journal">Journal</a>
       </nav>
@@ -1202,6 +1382,44 @@ img, svg { display: block; max-width: 100%; }
         </div>
       </div>
       <div class="history-grid" id="history-grid"></div>
+    </section>
+
+
+    <!-- ============ FULL HISTORY HEATMAP ============ -->
+    <section class="heatmap-section glass" id="full-history">
+      <div class="heatmap-head">
+        <div>
+          <h2 style="font-size:24px;font-weight:700;letter-spacing:-0.01em;margin-bottom:4px;">Full History</h2>
+          <p style="color:var(--text-dim);font-size:14px;">Your discipline journey — every day visualized.</p>
+        </div>
+        <div class="heatmap-year-nav">
+          <button id="heatmap-prev" title="Previous year">‹</button>
+          <span class="heatmap-year-label" id="heatmap-year">2026</span>
+          <button id="heatmap-next" title="Next year">›</button>
+        </div>
+      </div>
+      <div class="heatmap-stats">
+        <div class="heatmap-stat"><strong id="hm-total-days">0</strong><span>Active Days</span></div>
+        <div class="heatmap-stat"><strong id="hm-perfect-days">0</strong><span>Perfect Days</span></div>
+        <div class="heatmap-stat"><strong id="hm-avg-pct">0%</strong><span>Avg %</span></div>
+        <div class="heatmap-stat"><strong id="hm-longest-streak">0</strong><span>Longest Streak</span></div>
+      </div>
+      <div class="heatmap-scroll">
+        <div class="heatmap-wrap" id="heatmap-wrap">
+          <!-- JS populated -->
+        </div>
+      </div>
+      <div class="heatmap-legend">
+        <span>Less</span>
+        <div class="heatmap-legend-cells">
+          <div class="heatmap-cell lvl-0"></div>
+          <div class="heatmap-cell lvl-1"></div>
+          <div class="heatmap-cell lvl-2"></div>
+          <div class="heatmap-cell lvl-3"></div>
+          <div class="heatmap-cell lvl-4"></div>
+        </div>
+        <span>More</span>
+      </div>
     </section>
 
     <!-- ============ NOTIFICATION INFO + CALENDAR GUIDE ============ -->
@@ -1738,6 +1956,9 @@ function updateProgress() {
 
   renderHistory();
   renderBadges();
+  if (typeof renderHeatmap === 'function' && document.getElementById('heatmap-wrap')) {
+    renderHeatmap();
+  }
 }
 
 function recomputeCurrentStreak(lastDateISO) {
@@ -2073,6 +2294,10 @@ function init() {
   // Reminder loop (every 30s)
   setInterval(checkReminders, 30 * 1000);
 
+  // Initialize heatmap
+  initHeatmap();
+  renderHeatmap();
+
   // Handle date rollover while tab open
   setInterval(() => {
     const stored = readJSON(LS.DAY_STATE, null);
@@ -2167,6 +2392,8 @@ async function onLoginSuccess(user) {
   updateProgress();
   journalText.value = (await loadProfile()).journal || journalText.value || '';
   if (!__appInited) { window.__vkInitApp && window.__vkInitApp(); __appInited = true; }
+  // Pull full history for heatmap
+  pullAllHistory();
   updateSyncIndicator('idle');
 }
 
@@ -2453,6 +2680,241 @@ window.addEventListener('error', (e) => {
 window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled promise rejection:', e.reason);
 });
+
+
+
+/* ============================================
+   FULL HISTORY HEATMAP
+   ============================================ */
+let heatmapYear = new Date().getFullYear();
+let heatmapTooltip = null;
+
+function initHeatmap() {
+  // Create tooltip element once
+  if (!heatmapTooltip) {
+    heatmapTooltip = document.createElement('div');
+    heatmapTooltip.className = 'heatmap-tooltip';
+    document.body.appendChild(heatmapTooltip);
+  }
+  document.getElementById('heatmap-prev').addEventListener('click', () => {
+    heatmapYear--;
+    renderHeatmap();
+  });
+  document.getElementById('heatmap-next').addEventListener('click', () => {
+    if (heatmapYear < new Date().getFullYear()) {
+      heatmapYear++;
+      renderHeatmap();
+    }
+  });
+}
+
+function pctToLevel(pct) {
+  if (pct <= 0) return 0;
+  if (pct < 30) return 1;
+  if (pct < 60) return 2;
+  if (pct < 100) return 3;
+  return 4;
+}
+
+function renderHeatmap() {
+  const wrap = document.getElementById('heatmap-wrap');
+  const yearLabel = document.getElementById('heatmap-year');
+  const nextBtn = document.getElementById('heatmap-next');
+  if (!wrap) return;
+
+  yearLabel.textContent = heatmapYear;
+  nextBtn.disabled = heatmapYear >= new Date().getFullYear();
+
+  // Build year grid: Jan 1 -> Dec 31
+  const startDate = new Date(heatmapYear, 0, 1);
+  const endDate = new Date(heatmapYear, 11, 31);
+  const todayDate = new Date();
+  const todayStr = todayISO();
+
+  // Find the Sunday before/of Jan 1 to start the grid
+  const gridStart = new Date(startDate);
+  gridStart.setDate(gridStart.getDate() - gridStart.getDay()); // back to Sunday
+
+  // Total days in grid
+  const gridEnd = new Date(endDate);
+  // Forward to Saturday
+  gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
+
+  const cells = [];
+  const monthLabels = []; // {monthName, weekIndex}
+  let lastMonth = -1;
+  let weekIndex = 0;
+  let dayCursor = new Date(gridStart);
+
+  while (dayCursor <= gridEnd) {
+    const iso = todayFromDate(dayCursor);
+    const inYear = dayCursor.getFullYear() === heatmapYear;
+    const isFuture = dayCursor > todayDate;
+    const dow = dayCursor.getDay();
+
+    let level = 0;
+    let pct = 0;
+    let done = 0, total = 0;
+    let hasData = false;
+    if (inYear && !isFuture && history[iso]) {
+      pct = history[iso].pct || 0;
+      done = history[iso].done || 0;
+      total = history[iso].total || 0;
+      level = pctToLevel(pct);
+      hasData = true;
+    }
+
+    cells.push({
+      iso, inYear, isFuture, level, pct, done, total, hasData,
+      isToday: iso === todayStr,
+      dow,
+      weekIndex,
+    });
+
+    // Month label tracking - first Sunday of each new month
+    if (inYear && dow === 0 && dayCursor.getMonth() !== lastMonth) {
+      const monthName = dayCursor.toLocaleDateString('en-US', { month: 'short' });
+      monthLabels.push({ monthName, weekIndex });
+      lastMonth = dayCursor.getMonth();
+    }
+
+    dayCursor.setDate(dayCursor.getDate() + 1);
+    if (dow === 6) weekIndex++;
+  }
+
+  // Build HTML
+  const totalWeeks = weekIndex + 1;
+  const cellSize = 11, gap = 3;
+
+  let html = `
+    <div class="heatmap-months">
+      ${monthLabels.map(m => `<span class="heatmap-month-label" style="left:${m.weekIndex * (cellSize + gap)}px">${m.monthName}</span>`).join('')}
+    </div>
+    <div class="heatmap-body">
+      <div class="heatmap-days-col">
+        <div class="heatmap-day-label"></div>
+        <div class="heatmap-day-label">Mon</div>
+        <div class="heatmap-day-label"></div>
+        <div class="heatmap-day-label">Wed</div>
+        <div class="heatmap-day-label"></div>
+        <div class="heatmap-day-label">Fri</div>
+        <div class="heatmap-day-label"></div>
+      </div>
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+    </div>
+  `;
+  wrap.innerHTML = html;
+
+  const grid = document.getElementById('heatmap-grid');
+  cells.forEach(c => {
+    const cell = document.createElement('div');
+    if (!c.inYear || c.isFuture) {
+      cell.className = 'heatmap-cell empty';
+    } else {
+      cell.className = `heatmap-cell lvl-${c.level}` + (c.isToday ? ' today' : '');
+      cell.dataset.iso = c.iso;
+      cell.dataset.pct = c.pct;
+      cell.dataset.done = c.done;
+      cell.dataset.total = c.total;
+      cell.dataset.hasData = c.hasData;
+      cell.addEventListener('mouseenter', showHeatmapTooltip);
+      cell.addEventListener('mouseleave', hideHeatmapTooltip);
+      cell.addEventListener('mousemove', moveHeatmapTooltip);
+    }
+    grid.appendChild(cell);
+  });
+
+  // Stats
+  let activeDays = 0, perfectDays = 0, sum = 0;
+  Object.keys(history).forEach(iso => {
+    if (iso.startsWith(String(heatmapYear))) {
+      const h = history[iso];
+      if (h && h.total > 0) {
+        activeDays++;
+        sum += h.pct || 0;
+        if (h.allDone) perfectDays++;
+      }
+    }
+  });
+  document.getElementById('hm-total-days').textContent = activeDays;
+  document.getElementById('hm-perfect-days').textContent = perfectDays;
+  document.getElementById('hm-avg-pct').textContent = (activeDays ? Math.round(sum / activeDays) : 0) + '%';
+  document.getElementById('hm-longest-streak').textContent = computeLongestStreakForYear(heatmapYear);
+}
+
+function computeLongestStreakForYear(year) {
+  let longest = 0, current = 0;
+  const start = new Date(year, 0, 1);
+  const end = new Date(year, 11, 31);
+  const today = new Date();
+  const actualEnd = end > today ? today : end;
+  let cursor = new Date(start);
+  while (cursor <= actualEnd) {
+    const iso = todayFromDate(cursor);
+    const h = history[iso];
+    if (h && h.allDone) {
+      current++;
+      if (current > longest) longest = current;
+    } else {
+      current = 0;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return longest;
+}
+
+function showHeatmapTooltip(e) {
+  const cell = e.currentTarget;
+  const iso = cell.dataset.iso;
+  const pct = parseInt(cell.dataset.pct, 10);
+  const done = parseInt(cell.dataset.done, 10);
+  const total = parseInt(cell.dataset.total, 10);
+  const hasData = cell.dataset.hasData === 'true';
+  const d = new Date(iso + 'T00:00:00');
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  heatmapTooltip.innerHTML = `<strong>${dateStr}</strong>${hasData ? `${done}/${total} tasks · ${pct}%` : 'No activity'}`;
+  heatmapTooltip.classList.add('show');
+  moveHeatmapTooltip(e);
+}
+function moveHeatmapTooltip(e) {
+  if (!heatmapTooltip) return;
+  const x = e.clientX + 12;
+  const y = e.clientY - 36;
+  heatmapTooltip.style.left = x + 'px';
+  heatmapTooltip.style.top = y + 'px';
+}
+function hideHeatmapTooltip() {
+  if (heatmapTooltip) heatmapTooltip.classList.remove('show');
+}
+
+/* ============================================
+   PULL ALL HISTORY (not just 14 days)
+   ============================================ */
+async function pullAllHistory() {
+  if (!currentUser || !isOnline) return;
+  try {
+    const { data, error } = await supabase
+      .from('vk_days')
+      .select('date_iso, done_count, total_count, pct, all_done, completed_ids')
+      .eq('user_id', currentUser.id)
+      .order('date_iso', { ascending: false })
+      .limit(1000);
+    if (error) throw error;
+    (data || []).forEach(d => {
+      history[d.date_iso] = {
+        done: d.done_count,
+        total: d.total_count,
+        pct: d.pct,
+        allDone: d.all_done,
+      };
+    });
+    saveHistory(history);
+    renderHeatmap();
+  } catch (err) {
+    console.error('Pull all history failed:', err);
+  }
+}
+
 
 document.addEventListener('DOMContentLoaded', bootAuth);
 
